@@ -12,7 +12,7 @@ export type ServerEntityState = "Added" | "Deleted" | "Modified";
 
 /** Save bundle from breeze client */
 export interface SaveRequest {
-  body: { entities: ServerEntity[], saveOptions?: SaveOptions };
+  body: { entities: ServerEntity[], saveOptions?: SaveOptions, transaction?: Transaction };
 }
 
 /** Server-side representation of entity that came from the client */
@@ -68,12 +68,14 @@ export class ServerSaveError extends Error {
 export class SequelizeSaveError extends Error {
   entity: OpenObj;
   entityState: ServerEntityState;
-  constructor(e: BaseError, entity: OpenObj, entityState?: ServerEntityState) {
+  entityTypeName: string;
+  constructor(e: BaseError, entity: OpenObj, entityTypeName: string, entityState?: ServerEntityState) {
     super(e.message);
     e.stack = undefined;
     core.extend(this, e);
     this.entity = entity;
     this.entityState = entityState;
+    this.entityTypeName = entityTypeName;
     Object.setPrototypeOf(this, SequelizeSaveError.prototype);
   }
 }
@@ -337,7 +339,7 @@ export class SequelizeSaveHandler {
         }
         return this._addToResults((savedEntity as any).dataValues, entityTypeName);
       } catch (e) {
-        throw new SequelizeSaveError(e, entity, entityState);
+        throw new SequelizeSaveError(e, entity, entityTypeName, entityState);
       }
     } else if (entityState === "Modified") {
       const whereHash = {};
@@ -399,7 +401,7 @@ export class SequelizeSaveHandler {
         // we are just returning the original entity here.
         return this._addToResults(entity, entityTypeName);
       } catch (e) {
-        throw new SequelizeSaveError(e, entity, entityState);
+        throw new SequelizeSaveError(e, entity, entityTypeName, entityState);
       }
     } else if (entityState === "Deleted") {
       const whereHash = {};
@@ -414,7 +416,7 @@ export class SequelizeSaveHandler {
         // we are just returning the original entity here.
         return this._addToResults(entity, entityTypeName);
       } catch (e) {
-        throw new SequelizeSaveError(e, entity, entityState);
+        throw new SequelizeSaveError(e, entity, entityTypeName, entityState);
       }
     }
   }
