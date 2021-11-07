@@ -37,6 +37,7 @@ EntityQuery['fromUrl'] = urlToEntityQuery;
 
 export interface SequelizeQueryOptions {
   useTransaction: boolean;
+  transaction?: Transaction;
   beforeQueryEntities: (sq: SequelizeQuery) => void;
 }
 
@@ -70,7 +71,6 @@ export class SequelizeQuery {
   entityType: EntityType;
   entityQuery: EntityQuery;
   sqQuery: FindOptions;
-  transaction: Transaction;
   private wasLogged = false;
   private _nextId: any;
   private _keyMap: { [key: string]: any };
@@ -121,9 +121,14 @@ export class SequelizeQuery {
     const methodName = this.entityQuery.inlineCountEnabled ? "findAndCountAll" : "findAll";
     options = options || { useTransaction: false, beforeQueryEntities: undefined };
 
+    let ownTransaction = false; // if we passed a transaction from outside, then do not commit here
+    let trans: Transaction;
     if (options.useTransaction) {
-      const trans = await this.sequelizeManager.sequelize.transaction();
-      this.transaction = trans;
+      trans = options.transaction;
+      if (!trans) {
+        trans = await this.sequelizeManager.sequelize.transaction();
+        ownTransaction = true;
+      }
       this.sqQuery.transaction = trans;
     }
 
@@ -133,12 +138,12 @@ export class SequelizeQuery {
 
     try {
       const results = await model[methodName].call(model, this.sqQuery);
-      if (options.useTransaction) {
+      if (trans && ownTransaction) {
         this.sqQuery.transaction.commit();
       }
       return results;
     } catch (e) {
-      if (options.useTransaction) {
+      if (trans && ownTransaction) {
         this.sqQuery.transaction.rollback();
       }
       this.logQuery();
