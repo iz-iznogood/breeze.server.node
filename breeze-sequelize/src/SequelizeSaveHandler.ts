@@ -350,7 +350,8 @@ export class SequelizeSaveHandler {
           // this is consistent with the client behaviour where it does not update the version property
           // if its data type is binary
           if (cp.dataType.name === 'Binary') {
-            whereHash[cp.nameOnServer] = entity[cp.nameOnServer];
+            const buffer = entity[cp.nameOnServer].data || entity[cp.nameOnServer];
+            whereHash[cp.nameOnServer] = Number(bufferToHex(buffer));
           }
           else {
             whereHash[cp.nameOnServer] = entityAspect.originalValuesMap[cp.nameOnServer];
@@ -534,3 +535,19 @@ function createGuid() {
     return v.toString(16);
   });
 }
+
+function bufferToHex(buffer: number[]) {
+
+  const hexChar = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
+
+  const byteToHex = (b: number) => {
+      // eslint-disable-next-line no-bitwise
+      return hexChar[(b >> 4) & 0x0f] + hexChar[b & 0x0f];
+  };
+
+  return "0x" + buffer.reduce((s, byte) => {
+      return s + byteToHex(byte);
+  }, "");
+
+}
+
