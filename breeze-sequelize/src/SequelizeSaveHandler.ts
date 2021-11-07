@@ -104,6 +104,7 @@ export class SequelizeSaveHandler {
   readonly sequelizeManager: SequelizeManager;
   readonly metadataStore: MetadataStore;
   readonly entitiesFromClient: ServerEntity[];
+  readonly transaction: Transaction;
   saveOptions: SaveOptions;
   private _keyMappings: KeyMapping[];
   private _fkFixupMap: { [entityKeyName: string]: any };
@@ -122,6 +123,7 @@ export class SequelizeSaveHandler {
     this.metadataStore = sequelizeManager.metadataStore;
     this.entitiesFromClient = reqBody.entities;
     this.saveOptions = reqBody.saveOptions;
+    this.transaction = reqBody.transaction;
 
     this._keyMappings = [];
     this._fkFixupMap = {};
@@ -182,7 +184,12 @@ export class SequelizeSaveHandler {
 
     // TODO: consider making the isolation level settable on the SequelizeManager.
     // const trx = await sequelize.transaction( { isolationLevel: Transaction.ISOLATION_LEVELS.READ_UNCOMMITTED });
-    const trx = await sequelize.transaction();
+        let trx = this.transaction;
+        let ownTransaction = false; // if we passed a transaction from outside, then do not commit here
+        if (!trx) {
+            trx = await sequelize.transaction();
+            ownTransaction = true;
+        }
 
     const beforeSaveEntities: BeforeSaveEntitiesFn = (this.beforeSaveEntities || noopBeforeSaveEntities).bind(this);
     // beforeSaveEntities will either return nothing or a promise.
@@ -191,11 +198,15 @@ export class SequelizeSaveHandler {
     // saveCore returns either a list of entities or an object with an errors property.
     try {
       const r = await this._saveCore(saveMap, trx);
-      trx.commit();
+      if (ownTransaction) {
+        trx.commit();
+      }
       return { entities: r, keyMappings: this._keyMappings };
     } catch (e) {
       // will throw either a ServerSaveError or a SequelizeSaveError
-      trx.rollback();
+      if (ownTransaction) {
+        trx.rollback();
+      }
       // we have to return an object with an 'errors' property
       if (e instanceof ServerSaveError) {
         return { errors: e.entityErrors, message: e.message };
