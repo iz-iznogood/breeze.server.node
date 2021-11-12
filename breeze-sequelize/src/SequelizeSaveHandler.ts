@@ -363,8 +363,10 @@ export class SequelizeSaveHandler {
           // this is consistent with the client behaviour where it does not update the version property
           // if its data type is binary
           if (cp.dataType.name === 'Binary') {
-            const buffer = entity[cp.nameOnServer].data || entity[cp.nameOnServer];
-            whereHash[cp.nameOnServer] = Number(bufferToHex(buffer));
+            const buffer = entity[cp.nameOnServer]?.data || entity[cp.nameOnServer];
+            if (buffer) {
+              whereHash[cp.nameOnServer] = Number(bufferToHex(buffer));
+            }
           }
           else {
             whereHash[cp.nameOnServer] = entityAspect.originalValuesMap[cp.nameOnServer];
