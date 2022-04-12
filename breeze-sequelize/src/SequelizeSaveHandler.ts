@@ -269,10 +269,12 @@ export class SequelizeSaveHandler {
       entityInfos = entityInfos.reverse();
     }
 
-    const promises = entityInfos.map( async (entityInfo) => {
-      return await this._saveEntityAsync(entityInfo, sqModel, transaction);
-    });
-    const savedEntities = await Promise.all(promises);
+    const savedEntities = [];
+    for (const entityInfo of entityInfos) {
+        const savedEntity = await this._saveEntityAsync(entityInfo, sqModel, transaction);
+        savedEntities.push(savedEntity);
+    }
+
     return savedEntities;
   }
 
