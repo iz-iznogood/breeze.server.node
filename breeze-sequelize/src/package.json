@@ -1,6 +1,6 @@
 {
   "name": "breeze-sequelize",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Breeze Sequelize server implementation",
   "keywords": [
     "breeze",
