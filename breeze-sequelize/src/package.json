@@ -23,7 +23,7 @@
     "toposort": "^2.0.2"
   },
   "peerDependencies": {
-    "breeze-client": ">=2.0.7",
+    "breeze-client": ">=2.1.2",
     "lodash": "^4.17.15",
     "sequelize": "^6.3.5"
   },
