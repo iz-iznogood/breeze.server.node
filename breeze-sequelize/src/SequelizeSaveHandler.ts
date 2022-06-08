@@ -502,7 +502,7 @@ function toposortEntityTypes(entityTypes: EntityType[]) {
     st.index = ix;
   });
   const sortedEntityTypes = entityTypes.sort(function (a, b) {
-    return (a as any).index - (b as any).index;
+    return ((a as any).index ?? -1) - ((b as any).index ?? -1);
   });
   return sortedEntityTypes;
 }
@@ -536,7 +536,7 @@ function toposortEntityInfos(entityType: EntityType, entityInfos: ServerEntityIn
     st.__index = ix;
   });
   const sortedEntityInfos = entityInfos.sort(function (a, b) {
-    return (a as any).__index - (b as any).__index;
+    return ((a as any).__index ?? -1) - ((b as any).__index ?? -1);
   });
   return sortedEntityInfos;
 }
