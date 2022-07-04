@@ -3,7 +3,7 @@
     "compilerOptions": {
         "declaration": true,
         "declarationDir": "types",
-        "target": "es6",
+        "target": "ESNext",
         "strict": false,
         "module": "commonjs",
         "moduleResolution": "node",
