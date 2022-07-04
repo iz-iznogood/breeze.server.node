@@ -458,10 +458,10 @@ export class SequelizeSaveHandler {
           }
         }
 
-        const dtName = dp.dataType.name;
-        if (dtName === "DateTime" || dtName === "DateTimeOffset") {
-          entity[dp.nameOnServer] = new Date(Date.parse(val));
-        }
+        // const dtName = dp.dataType.name;
+        // if (dtName === "DateTime" || dtName === "DateTimeOffset") {
+        //   entity[dp.nameOnServer] = new Date(Date.parse(val));
+        // }
       } else {
         //      // this allows us to avoid inserting a null.
         //      // TODO: think about an option to allow this if someone really wants to.
