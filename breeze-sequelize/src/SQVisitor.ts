@@ -124,9 +124,6 @@ const toSQVisitor = (function () {
           if (!isEmpty(predSq.include)) {
             const processIncludes = function (sourceIncludes: IncludeOptions[], targetIncludes: IncludeOptions[]) {
               sourceIncludes.forEach(function (sourceInclude: IncludeOptions) {
-                if (!targetIncludes) {
-                  targetIncludes = [];
-                }
                 const include = _.find(targetIncludes, { model: sourceInclude.model });
                 if (!include) {
                   targetIncludes.push(sourceInclude);
@@ -134,9 +131,12 @@ const toSQVisitor = (function () {
                   if (include.where === null) {
                     include.where = sourceInclude.where;
                   } else if (sourceInclude.where != null) {
-                    const where = {} as Where;
-                    where[that.op.key] = [include.where, sourceInclude.where];
-                    include.where = where;
+                    if (!!include.where) {
+                      const where = {} as Where;
+                      where[that.op.key] = [include.where, sourceInclude.where];
+                      include.where = where;
+                  } else {
+                      include.where = sourceInclude.where;
                   }
                   if (include.attributes === null || (include.attributes as any[]).length === 0) {
                     include.attributes = sourceInclude.attributes;
@@ -144,6 +144,7 @@ const toSQVisitor = (function () {
                     include.attributes = _.uniq((include.attributes as any[]).concat(sourceInclude.attributes));
                   }
                   if (!isEmpty(sourceInclude.include)) {
+                    include.include = include.include || [];
                     processIncludes(sourceInclude.include as IncludeOptions[], include.include as IncludeOptions[]);
                   }
                 }
