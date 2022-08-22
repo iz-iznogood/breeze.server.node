@@ -135,8 +135,9 @@ const toSQVisitor = (function () {
                       const where = {} as Where;
                       where[that.op.key] = [include.where, sourceInclude.where];
                       include.where = where;
-                  } else {
+                    } else {
                       include.where = sourceInclude.where;
+                    }
                   }
                   if (include.attributes === null || (include.attributes as any[]).length === 0) {
                     include.attributes = sourceInclude.attributes;
