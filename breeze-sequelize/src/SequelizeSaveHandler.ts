@@ -360,7 +360,9 @@ export class SequelizeSaveHandler {
         whereHash[kp.nameOnServer] = entity[kp.nameOnServer];
       });
 
-      if (entityType.concurrencyProperties && entityType.concurrencyProperties.length > 0) {
+      const skipConcurrencyCheck = this.saveOptions?.tag?.skipConcurrencyCheck ?? false;
+
+      if (!skipConcurrencyCheck && Array.isArray(entityType.concurrencyProperties)) {
         entityType.concurrencyProperties.forEach(cp => {
           // this is consistent with the client behaviour where it does not update the version property
           // if its data type is binary
