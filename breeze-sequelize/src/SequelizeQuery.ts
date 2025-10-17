@@ -319,57 +319,16 @@ export class SequelizeQuery {
   }
 
   private _reshapeSelectResults(sqResults: CountModel | Model[]) {
-    let inlineCount;
+    const options = {
+        plain: true
+    };
     if (this.entityQuery.inlineCountEnabled) {
-      inlineCount = (sqResults as CountModel).count;
-      sqResults = (sqResults as CountModel).rows;
-    }
-    const propertyPaths = this.entityQuery.selectClause.propertyPaths;
-    const usesNameOnServer = this.entityQuery.usesNameOnServer;
-        const options = {
-            plain: true
+        return {
+          results: (sqResults as CountModel).rows.map(x => x.get(options)),
+          inlineCount: (sqResults as CountModel).count
         };
-    const results = (sqResults as Model[]).map(x => x.get(options));
-/*
-    const results = (sqResults as Model[]).map(sqResult => {
-      // start with the sqResult and then promote nested properties up to the top level
-      // while removing nested path.
-      const result = (sqResult as any).dataValues;
-      let parent;
-      propertyPaths.forEach(pp => {
-        parent = sqResult;
-        const props = this.entityType.getPropertiesOnPath(pp, usesNameOnServer, true);
-        let nextProp = props[0];
-        let remainingProps = props.slice(0);
-        while (remainingProps.length > 1 && nextProp.isNavigationProperty) {
-          parent = (parent as any)[nextProp.nameOnServer];
-          remainingProps = remainingProps.slice(1);
-          nextProp = remainingProps[0];
-        }
-        let val = parent && parent[nextProp.nameOnServer];
-        // if last property in path is a nav prop then we need to wrap the results
-        // as either an entity or entities.
-        if (nextProp.isNavigationProperty) {
-          if (nextProp.isScalar) {
-            val = this._createResult(val, (nextProp as NavigationProperty).entityType, true);
-          } else {
-            val = val.map((v: any) => {
-              return this._createResult(v, (nextProp as NavigationProperty).entityType, true);
-            }, this);
-          }
-        } else {
-          val = val && (val.dataValues || val);
-        }
-        pp = usesNameOnServer ? pp : _.map(props, "nameOnServer").join(".");
-        result[pp] = val;
-      }, this);
-      return result;
-    }, this);
-*/
-    if (inlineCount != undefined) {
-      return { results: results, inlineCount: inlineCount };
     } else {
-      return results;
+        return (sqResults as  Model[]).map(x => x.get(options));
     }
   }
 
