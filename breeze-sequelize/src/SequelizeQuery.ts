@@ -326,6 +326,11 @@ export class SequelizeQuery {
     }
     const propertyPaths = this.entityQuery.selectClause.propertyPaths;
     const usesNameOnServer = this.entityQuery.usesNameOnServer;
+        const options = {
+            plain: true
+        };
+    const results = (sqResults as Model[]).map(x => x.get(options));
+/*
     const results = (sqResults as Model[]).map(sqResult => {
       // start with the sqResult and then promote nested properties up to the top level
       // while removing nested path.
@@ -360,7 +365,7 @@ export class SequelizeQuery {
       }, this);
       return result;
     }, this);
-
+*/
     if (inlineCount != undefined) {
       return { results: results, inlineCount: inlineCount };
     } else {
